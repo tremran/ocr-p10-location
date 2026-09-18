@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: chat-poc-db
+    environment:
+      POSTGRES_DB: chat_poc
+      POSTGRES_USER: chatuser
+      POSTGRES_PASSWORD: chatpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build:
+      context: ./backend
+    container_name: chat-poc-backend
+    depends_on:
+      - db
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/chat_poc
+      SPRING_DATASOURCE_USERNAME: chatuser
+      SPRING_DATASOURCE_PASSWORD: chatpass
+    ports:
+      - "8080:8080"
+
+  client:
+    image: nginx:alpine
+    container_name: chat-poc-client
+    ports:
+      - "8081:80"
+    volumes:
+      - ./client:/usr/share/nginx/html:ro
+
+  support:
+    image: nginx:alpine
+    container_name: chat-poc-support
+    ports:
+      - "8082:80"
+    volumes:
+      - ./support:/usr/share/nginx/html:ro
+
+volumes:
+  postgres_data:

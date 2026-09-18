@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support Chat</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.6.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 2rem; background: #f8fafc; }
+        .layout { display: grid; grid-template-columns: 320px 1fr; gap: 1.5rem; }
+        .panel { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 1rem; }
+        .conversation-list { list-style: none; padding: 0; margin: 0; }
+        .conversation-list li { padding: 0.8rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-top: 0.5rem; cursor: pointer; }
+        .conversation-list li.active { background: #eff6ff; border-color: #93c5fd; }
+        .section-title { margin: 1.25rem 0 0.5rem; font-size: 0.95rem; color: #374151; }
+        .messages { min-height: 280px; max-height: 420px; overflow-y: auto; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; background: #fafafa; }
+        .message { margin: 0.5rem 0; padding: 0.5rem 0.75rem; border-radius: 8px; }
+        .customer { background: #dbeafe; margin-left: 1rem; }
+        .support { background: #dcfce7; margin-right: 1rem; }
+        .meta { font-size: 0.75rem; color: #4b5563; }
+        textarea, button { width: 100%; margin-top: 0.75rem; padding: 0.75rem; border-radius: 8px; border: 1px solid #d7dce5; }
+        button { background: #16a34a; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <aside class="panel">
+        <h2>Support</h2>
+        <label for="agencySelect">Agence suivie</label>
+        <select id="agencySelect"></select>
+        <h3 class="section-title">Actives</h3>
+        <ul class="conversation-list" id="activeConversationList"></ul>
+        <h3 class="section-title">Archivées</h3>
+        <ul class="conversation-list" id="archivedConversationList"></ul>
+    </aside>
+
+    <main class="panel">
+        <h2 id="conversationTitle">Sélectionnez une conversation</h2>
+        <div class="messages" id="supportMessages"></div>
+        <div id="supportMessageForm">
+            <textarea id="supportInput" rows="4" placeholder="Réponse du support..."></textarea>
+            <button id="sendSupportMessage">Envoyer</button>
+        </div>
+        <button id="closeConversation" type="button">Terminer la conversation</button>
+    </main>
+</div>
+
+<script>
+    const apiBase = 'http://localhost:8080/api';
+    let conversations = [];
+    let selectedConversation = null;
+    let agencyCode = 'AG-001';
+    let socket;
+    let stompClient;
+    let conversationSubscription;
+    let supportSubscription;
+
+    const agencySelect = document.getElementById('agencySelect');
+    const activeConversationList = document.getElementById('activeConversationList');
+    const archivedConversationList = document.getElementById('archivedConversationList');
+    const supportMessages = document.getElementById('supportMessages');
+    const supportInput = document.getElementById('supportInput');
+    const supportMessageForm = document.getElementById('supportMessageForm');
+    const conversationTitle = document.getElementById('conversationTitle');
+    const closeConversationButton = document.getElementById('closeConversation');
+
+    async function loadAgencies() {
+        const response = await fetch(`${apiBase}/agencies`);
+        const agencies = await response.json();
+        agencies.forEach((agency) => {
+            const option = document.createElement('option');
+            option.value = agency.code;
+            option.textContent = `${agency.name} (${agency.code})`;
+            agencySelect.appendChild(option);
+        });
+        agencySelect.value = agencyCode;
+    }
+
+    async function loadConversations(selectDefault = true) {
+        const selectedId = selectedConversation?.id;
+        const response = await fetch(`${apiBase}/agencies/${findAgencyIdByCode(agencyCode)}/conversations`);
+        conversations = await response.json();
+        selectedConversation = conversations.find((conversation) => conversation.id === selectedId) || null;
+        renderConversations();
+        updateConversationControls();
+        if (selectDefault && conversations.length > 0) {
+            selectConversation(conversations[0].id);
+        }
+    }
+
+    function findAgencyIdByCode(code) {
+        const agencies = [{ id: 1, code: 'AG-001' }, { id: 2, code: 'AG-002' }, { id: 3, code: 'AG-003' }];
+        return agencies.find((agency) => agency.code === code)?.id || 1;
+    }
+
+    agencySelect.addEventListener('change', async () => {
+        agencyCode = agencySelect.value;
+        selectedConversation = null;
+        supportMessages.innerHTML = '';
+        if (conversationSubscription) {
+            conversationSubscription.unsubscribe();
+            conversationSubscription = null;
+        }
+        if (supportSubscription) {
+            supportSubscription.unsubscribe();
+            supportSubscription = null;
+        }
+        if (stompClient && stompClient.connected) {
+            subscribeToSupport();
+        }
+        await loadConversations();
+    });
+
+    function renderConversations() {
+        activeConversationList.innerHTML = '';
+        archivedConversationList.innerHTML = '';
+        conversations.forEach((conversation) => {
+            const element = document.createElement('li');
+            const createdAt = new Date(conversation.createdAt).toLocaleString('fr-FR');
+            element.textContent = `Client ${conversation.guestId} · ${createdAt} · ${conversation.status}`;
+            element.addEventListener('click', () => selectConversation(conversation.id));
+            if (selectedConversation && selectedConversation.id === conversation.id) {
+                element.classList.add('active');
+            }
+            const targetList = conversation.status === 'OPEN' ? activeConversationList : archivedConversationList;
+            targetList.appendChild(element);
+        });
+    }
+
+    async function selectConversation(id) {
+        selectedConversation = conversations.find((conversation) => conversation.id === id);
+        if (!selectedConversation) return;
+        conversationTitle.textContent = `Conversation ${selectedConversation.guestId}`;
+        supportMessages.innerHTML = '';
+
+        const response = await fetch(`${apiBase}/conversations/${id}/messages`);
+        const messages = await response.json();
+        messages.forEach((message) => appendMessage(message.senderType, message.content, message.createdAt));
+        updateConversationControls();
+        renderConversations();
+        connectSocket();
+    }
+
+    function connectSocket() {
+        if (stompClient && stompClient.connected) {
+            subscribeToSupport();
+            subscribeToConversation();
+            return;
+        }
+        const socketUrl = 'http://localhost:8080/ws';
+        socket = new SockJS(socketUrl);
+        stompClient = Stomp.over(socket);
+        stompClient.connect({}, () => {
+            subscribeToSupport();
+            subscribeToConversation();
+        });
+    }
+
+    function subscribeToSupport() {
+        if (supportSubscription) {
+            supportSubscription.unsubscribe();
+        }
+        supportSubscription = stompClient.subscribe(`/topic/agency.${findAgencyIdByCode(agencyCode)}.conversations`, () => {
+            loadConversations(false);
+        });
+    }
+
+    function subscribeToConversation() {
+        if (conversationSubscription) {
+            conversationSubscription.unsubscribe();
+        }
+
+        conversationSubscription = stompClient.subscribe(`/topic/conversation.${selectedConversation.id}`, (message) => {
+            const payload = JSON.parse(message.body);
+            appendMessage(payload.senderType, payload.content, payload.createdAt);
+        });
+    }
+
+    function appendMessage(senderType, content, createdAt) {
+        const item = document.createElement('div');
+        item.className = `message ${senderType === 'AGENCY' ? 'support' : 'customer'}`;
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        meta.textContent = `${senderType === 'AGENCY' ? 'Support' : 'Client'} · ${new Date(createdAt).toLocaleTimeString()}`;
+        const body = document.createElement('div');
+        body.textContent = content;
+        item.appendChild(meta);
+        item.appendChild(body);
+        supportMessages.appendChild(item);
+        supportMessages.scrollTop = supportMessages.scrollHeight;
+    }
+
+    function updateConversationControls() {
+        const isOpen = selectedConversation?.status === 'OPEN';
+        supportMessageForm.style.display = isOpen ? 'block' : 'none';
+        supportInput.disabled = !isOpen;
+        document.getElementById('sendSupportMessage').disabled = !isOpen;
+        closeConversationButton.disabled = !isOpen;
+    }
+
+    document.getElementById('sendSupportMessage').addEventListener('click', async () => {
+        if (!selectedConversation || selectedConversation.status !== 'OPEN') return;
+        const content = supportInput.value.trim();
+        if (!content) return;
+
+        await fetch(`${apiBase}/messages`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                conversationId: String(selectedConversation.id),
+                senderType: 'AGENCY',
+                agencyCode,
+                content
+            })
+        });
+
+        supportInput.value = '';
+    });
+
+    closeConversationButton.addEventListener('click', async () => {
+        if (!selectedConversation || selectedConversation.status !== 'OPEN') return;
+
+        const response = await fetch(`${apiBase}/conversations/${selectedConversation.id}/close`, {
+            method: 'POST'
+        });
+        if (!response.ok) return;
+
+        selectedConversation.status = 'CLOSED';
+        renderConversations();
+        updateConversationControls();
+    });
+
+    async function initialize() {
+        await loadAgencies();
+        await loadConversations();
+    }
+
+    initialize();
+</script>
+</body>
+</html>
