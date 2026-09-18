@@ -1,15 +1,17 @@
 # Proposition d'architecture
 
+<div style="page-break-after: always;"></div>
+
 ## Objet
 
-Ce document regroupe la synthèse de l'audit de l'existant, les spécifications techniques proposées et le modèle de données de la V1 de l'application Your Car Your Way.
-
-Les choix indiqués comme « à valider » doivent être arbitrés avant le développement.
+Ce document contient un l'audit de l'existant, les spécifications techniques proposées et le modèle de données de la V1 de l'application Your Car Your Way.
 
 La récupération, la migration et la synchronisation des données ou fonctionnalités de
 l'existant sont hors périmètre de cette proposition. La V1 est conçue comme une
 application autonome ; les éventuels travaux de reprise feront l'objet d'un projet
 distinct.
+
+<div style="page-break-after: always;"></div>
 
 ## 1. Audit de l'existant
 
@@ -90,6 +92,8 @@ Ces risques concernent le coût de possession, la complexité de maintenance et 
 | Définir les objectifs de disponibilité, performance, RPO et RTO. | Risques de disponibilité, performance et exploitation |
 | Réaliser un pilote sur un périmètre limité avant la généralisation. | Risques de gouvernance et de maintenance <br> Risques de données et d'intégration |
 
+<div style="page-break-after: always;"></div>
+
 ## 2. Spécifications techniques
 
 ### 2.1 Architecture cible proposée
@@ -115,10 +119,15 @@ Modules fonctionnels proposés :
 
 Cette architecture pourra évoluer vers des services séparés si la charge ou les contraintes d'isolation le justifient, sans imposer une complexité supplémentaire dès la V1.
 
+<div style="page-break-after: always;"></div>
+
 ### 2.3 Diagrammes UML
 
 #### Cas d'utilisation
 
+![diagramme use case](./docs/img/use_case.png)
+
+<!-- 
 ```plantuml
 @startuml use_cases
 left to right direction
@@ -139,23 +148,28 @@ rectangle "Application Your Car Your Way" {
   usecase "Traiter une conversation" as UC_Support
 }
 
-Client --> UC_Profile
-Client --> UC_Agencies
-Client --> UC_Search
-Client --> UC_Offer
-Client --> UC_Book
-Client --> UC_Pay
-Client --> UC_Reservations
-Client --> UC_Chat
-Conseiller --> UC_Support
+Client -- > UC_Profile
+Client -- > UC_Agencies
+Client -- > UC_Search
+Client -- > UC_Offer
+Client -- > UC_Book
+Client -- > UC_Pay
+Client -- > UC_Reservations
+Client -- > UC_Chat
+Conseiller -- > UC_Support
 
 UC_Book .> UC_Offer : <<include>>
 UC_Book .> UC_Pay : <<include>>
 @enduml
 ```
+-->
+
+<div style="page-break-after: always;"></div>
 
 #### Architecture logique
 
+![diagramme architecture](./docs/img/archi.png)
+<!-- 
 ```plantuml
 @startuml components
 left to right direction
@@ -182,32 +196,37 @@ component "Azure SignalR Service" as Realtime
 component "Azure Monitor / Application Insights" as Observability
 cloud "Prestataire de paiement" as Payment
 
-Client --> Frontend
-AgencyApp --> Gateway
-Frontend --> Gateway
-Gateway --> Backend
-Backend --> Identity
-Backend --> Catalog
-Backend --> Booking
-Backend --> Payments
-Backend --> Chat
-Backend --> Notifications
-Identity --> DB
-Catalog --> DB
-Booking --> DB
-Payments --> DB
-Chat --> DB
-Notifications --> DB
-Payments --> Queue
-Notifications --> Queue
-Chat --> Realtime
-Payments --> Payment
-Backend --> Observability
+Client -- > Frontend
+AgencyApp -- > Gateway
+Frontend -- > Gateway
+Gateway -- > Backend
+Backend -- > Identity
+Backend -- > Catalog
+Backend -- > Booking
+Backend -- > Payments
+Backend -- > Chat
+Backend -- > Notifications
+Identity -- > DB
+Catalog -- > DB
+Booking -- > DB
+Payments -- > DB
+Chat -- > DB
+Notifications -- > DB
+Payments -- > Queue
+Notifications -- > Queue
+Chat -- > Realtime
+Payments -- > Payment
+Backend -- > Observability
 @enduml
-```
+``` 
+-->
+
+<div style="page-break-after: always;"></div>
 
 #### Séquence de réservation et de paiement
 
+![Diagramme de séquence](./docs/img/sequence.png)
+<!-- 
 ```plantuml
 @startuml booking_sequence
 autonumber
@@ -225,55 +244,60 @@ Client -> UI : Saisir les critères de recherche
 UI -> API : Rechercher une offre
 API -> Booking : Vérifier disponibilité
 Booking -> DB : Lire offres et disponibilités
-DB --> Booking : Offre disponible
-Booking --> API : Résultats
-API --> UI : Afficher les offres
+DB -- > Booking : Offre disponible
+Booking -- > API : Résultats
+API -- > UI : Afficher les offres
 
 Client -> UI : Confirmer l'offre
 UI -> API : Créer une réservation
 API -> Booking : Vérifier disponibilité
 Booking -> DB : Créer réservation pending_payment
-Booking --> API : Identifiant de réservation
+Booking -- > API : Identifiant de réservation
 API -> Payments : Créer session de paiement
 Payments -> PSP : Créer paiement
-PSP --> Payments : URL ou identifiant de paiement
-Payments --> API : Session de paiement
-API --> UI : Rediriger vers le paiement
+PSP -- > Payments : URL ou identifiant de paiement
+Payments -- > API : Session de paiement
+API -- > UI : Rediriger vers le paiement
 
 PSP -> Payments : Webhook paiement accepté
 Payments -> PSP : Vérifier signature du webhook
 Payments -> DB : Enregistrer paiement succeeded
 Payments -> Booking : Confirmer la réservation
 Booking -> DB : Passer la réservation à confirmed
-Booking --> UI : Référence de réservation
+Booking -- > UI : Référence de réservation
 
 alt Paiement refusé ou expiré
   PSP -> Payments : Webhook échec
   Payments -> DB : Enregistrer paiement failed
   Payments -> Booking : Maintenir ou expirer la réservation
-  Booking --> UI : Afficher l'échec sans confirmation
+  Booking -- > UI : Afficher l'échec sans confirmation
 end
 @enduml
-```
+``` -->
+
+<div style="page-break-after: always;"></div>
 
 #### États d'une réservation
 
+![Diagramme d'état](./docs/img/etats.png)
+<!-- 
 ```plantuml
 @startuml reservation_states
 skinparam monochrome true
 skinparam shadowing false
-[*] --> pending_payment : création
-pending_payment --> confirmed : paiement accepté
-pending_payment --> payment_failed : paiement refusé
-pending_payment --> expired : délai dépassé
-confirmed --> cancelled : annulation acceptée
-confirmed --> completed : location terminée
-cancelled --> [*]
-payment_failed --> [*]
-expired --> [*]
-completed --> [*]
+[*] -- > pending_payment : création
+pending_payment -- > confirmed : paiement accepté
+pending_payment -- > payment_failed : paiement refusé
+pending_payment -- > expired : délai dépassé
+confirmed -- > cancelled : annulation acceptée
+confirmed -- > completed : location terminée
+cancelled -- > [*]
+payment_failed -- > [*]
+expired -- > [*]
+completed -- > [*]
 @enduml
-```
+``` 
+-->
 
 ### 2.4 Composants techniques
 
@@ -282,7 +306,7 @@ completed --> [*]
 | Interface client | Profil, recherche, réservation, paiement, historique et tchat | React avec une bibliothèque de composants accessible et internationalisable |
 | API métier | Authentification, règles métier et exposition des ressources | Spring Boot modulaire et REST versionnée avec OpenAPI |
 | Base relationnelle | Données transactionnelles et cohérence des réservations | PostgreSQL managé en haute disponibilité |
-| Cache et verrous | Cache de lecture et coordination des vérifications de disponibilité | Redis ou service équivalent, sans en faire la source de vérité |
+| Cache et verrous | Cache de lecture et coordination des vérifications de disponibilité | Redis ou service équivalent |
 | Bus ou file de messages | Notifications, webhooks et traitements asynchrones | Azure Service Bus |
 | Prestataire de paiement | Paiement et remboursement | Prestataire externe tel que Stripe |
 | Service temps réel | Messages du tchat et événements de conversation | Azure SignalR Service |
@@ -300,10 +324,9 @@ Principes :
 - Les dates sont transmises dans un format normalisé avec le fuseau ou l'identifiant de zone nécessaire.
 - Les montants sont transmis comme un entier exprimé dans l'unité minimale de la devise, avec une devise explicite.
 - Les listes prennent en charge la pagination, le filtrage et le tri documentés.
-- Les endpoints de création et de mutation critiques appliquent la politique d'idempotence définie en section 2.6.
 - Le contrat est publié avec OpenAPI et versionné avec le code.
 
-Les droits sont contrôlés côté serveur pour chaque ressource et chaque action. Les rôles minimaux sont le client, l'application d'agence, le conseiller et l'administrateur technique. Les permissions détaillées restent à valider.
+Les droits sont contrôlés côté serveur pour chaque ressource et chaque action.
 
 ### 2.6 Réservation et paiement
 
@@ -327,10 +350,9 @@ Pour une annulation effectuée moins d'une semaine avant le début de la locatio
 
 ### 2.7 Sécurité
 
-- TLS actuel et sécurisé uniquement ; TLS 1.0 et les protocoles obsolètes sont interdits.
+- TLS 1.0 et les protocoles obsolètes sont interdits.
 - Mots de passe stockés avec un algorithme adaptatif moderne, par exemple Argon2id ou bcrypt.
 - Secrets stockés dans un coffre dédié, jamais dans le dépôt ou des fichiers versionnés.
-- Authentification renforcée pour les actions sensibles.
 - Vérification de signature et d'anti-rejeu pour les webhooks de paiement.
 - Contrôle d'accès côté serveur, journalisation des refus et limitation des tentatives sensibles.
 - Données bancaires non stockées par l'application.
@@ -338,7 +360,7 @@ Pour une annulation effectuée moins d'une semaine avant le début de la locatio
 
 ### 2.8 Disponibilité, performance et résilience
 
-Les objectifs chiffrés doivent être validés avant la production. La cible doit prévoir :
+La cible doit prévoir :
 
 - plusieurs instances applicatives lorsque le niveau de disponibilité le requiert ;
 - une base sauvegardée automatiquement et une procédure de restauration testée ;
@@ -408,12 +430,12 @@ La cible reprend donc le socle cloud et conteneurisé du périmètre américain,
 | Backend | Spring Boot modulaire | Le périmètre américain associe Spring Boot à la meilleure performance observée ; la modularité centralise les règles métier sans imposer la complexité opérationnelle de microservices dès la V1 |
 | API | REST versionnée avec contrat OpenAPI | Compatible avec les applications web et d'agence, testable et documentable |
 | Base de données | PostgreSQL managé en haute disponibilité | Une base relationnelle est nécessaire pour les transactions et contraintes des réservations ; le service managé réduit les opérations manuelles constatées dans l'existant |
-| Cache et verrous | Redis ou service équivalent, uniquement pour les usages nécessaires | Réduit la latence et aide à coordonner les vérifications de disponibilité sans devenir la source de vérité |
+| Cache et verrous | Redis ou service équivalent, uniquement pour les usages nécessaires | Réduit la latence et aide à coordonner les vérifications de disponibilité |
 | Traitements asynchrones | Azure Service Bus avec files/topics et dead-letter queue | Découple notifications, webhooks et traitements pouvant être rejoués, tout en isolant les messages en échec |
 | Temps réel | Azure SignalR Service | Fournit les connexions temps réel du tchat et des événements sans gérer directement la montée en charge des connexions WebSocket |
 | Paiement | Prestataire externe tel que Stripe | Évite le stockage des données bancaires et fournit des APIs de paiement et remboursement |
 | Déploiement | Azure avec conteneurs et chaîne CI/CD reproductible | Le périmètre américain, déployé sur Azure avec des conteneurs, obtient les meilleurs indicateurs de disponibilité, charge, erreurs et stabilisation ; cette approche corrige les déploiements manuels OVH |
-| Gestion des secrets | Azure Key Vault généralisé à tous les environnements | Le périmètre américain utilise déjà Key Vault pour l'API ; sa généralisation corrige le stockage de secrets en fichiers et l'usage partiel observés |
+| Gestion des secrets | Azure Key Vault généralisé à tous les environnements | Le périmètre américain utilise déjà Key Vault pour l'API ; sa généralisation corrige le stockage de secrets en fichiers |
 | Observabilité | Azure Monitor et Application Insights avec instrumentation OpenTelemetry | Centralise les logs, métriques, traces distribuées, alertes et tableaux de bord des opérations sensibles |
 
 Le choix final devra être documenté dans une matrice de décision comprenant les critères, la pondération, les options étudiées.
@@ -443,10 +465,8 @@ flowchart LR
 
 Principes d'intégration :
 
-- le système central est la source de vérité pour les réservations créées dans la nouvelle application ;
-- les webhooks de paiement appliquent la politique d'idempotence de la section 2.6 et sont rejouables sans double confirmation ;
+- les webhooks de paiement sont rejouables sans double confirmation ;
 - les indisponibilités d'un service externe produisent un état explicite et ne doivent pas confirmer une réservation à tort ;
-- les notifications et traitements non critiques peuvent être asynchrones et repris après incident ;
 - les clés, certificats, URLs et identifiants de prestataires sont fournis par la configuration sécurisée de l'environnement ;
 - les contrats des intégrations sont testés avec des tests de contrat et des environnements de test des fournisseurs.
 
@@ -459,8 +479,9 @@ Les exigences détaillées sont définies dans les sections [Sécurité](#27-sé
 - appliquer le principe du moindre privilège et tracer les opérations sensibles ;
 - intégrer les contrôles de sécurité, d'accessibilité et de sobriété dans la conception, le développement, les tests et l'exploitation ;
 - analyser les dépendances, les configurations et les images de déploiement à chaque livraison ;
-- suivre les écarts avec une priorité, un responsable et une date de correction ;
-- documenter les compromis entre sécurité, accessibilité, performance, disponibilité et impact écologique.
+- suivre les métriques et définir des actions si nécessaire.
+
+<div style="page-break-after: always;"></div>
 
 ## 3. Modèle de données
 
@@ -478,6 +499,7 @@ Le modèle proposé utilise une base relationnelle transactionnelle. Les donnée
 
 ```mermaid
 erDiagram
+    direction LR
     SUPPORT_AGENT
     AGENCY ||--o{ RESERVATION : depart
     PROFILE ||--|| USER : possède
@@ -616,7 +638,7 @@ erDiagram
 
 - La référence est unique et une réservation appartient à un seul client.
 - L'état suit les transitions définies dans les spécifications techniques.
-- Les mutations critiques sont idempotentes, contrôlées par les droits et journalisées.
+- Les modifications critiques sont idempotentes, contrôlées par les droits et journalisées.
 - Les dates, agences, catégorie, montant et devise utilisés à la confirmation restent traçables.
 
 #### Paiement et remboursement

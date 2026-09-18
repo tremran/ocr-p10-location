@@ -1,10 +1,14 @@
 # Cahier des charges fonctionnels
 
+<div style="page-break-after: always;"></div>
+
 ## Objet du document
 
 Ce document définit les besoins fonctionnels de la nouvelle application Your Car Your Way. L’objectif est de fournir une application client centralisée, accessible à l’international, pour consulter les offres, réserver un véhicule et gérer ses réservations.
 
 Les exigences sont exprimées du point de vue des utilisateurs et des systèmes externes. Les choix de technologie, d’hébergement et d’architecture détaillée feront l’objet de documents techniques dédiés.
+
+<div style="page-break-after: always;"></div>
 
 ## Contexte et objectifs
 
@@ -23,6 +27,8 @@ La nouvelle application doit :
 - conserver la possibilité d’appliquer des règles et des données propres à chaque pays ;
 - exposer une API exploitable par les applications utilisées en agence ;
 - améliorer la sécurité, la disponibilité et la capacité d’évolution du service.
+
+<div style="page-break-after: always;"></div>
 
 ## Périmètre
 
@@ -50,6 +56,8 @@ La nouvelle application doit :
 
 Les applications en agence restent hors du périmètre de l’interface client, mais doivent pouvoir accéder aux données nécessaires au moyen de l’API.
 
+<div style="page-break-after: always;"></div>
+
 ## Acteurs et systèmes externes
 
 ### Client
@@ -71,6 +79,8 @@ Le système doit pouvoir notifier le client des événements importants d’une 
 ### Conseiller ou agent d’agence
 
 Un conseiller habilité peut répondre aux demandes des clients depuis l’outil de support ou l’application d’agence. Il ne peut consulter que les conversations et les données nécessaires à la prise en charge de la demande.
+
+<div style="page-break-after: always;"></div>
 
 ## Parcours fonctionnels
 
@@ -271,6 +281,8 @@ En tant que responsable d'une application d'agence, je veux que chaque appel API
 | Epic 5 | US#14 | Application d'agence | Consulter et gérer les ressources métier autorisées |
 | Epic 5 | US#15 | Responsable d'une application d'agence | Garantir que chaque appel API est authentifié, autorisé et traçable |
 
+<div style="page-break-after: always;"></div>
+
 ## Règles métier transverses
 
 - Une offre ne peut être réservée que si elle est disponible au moment de la confirmation.
@@ -283,6 +295,8 @@ En tant que responsable d'une application d'agence, je veux que chaque appel API
 - Un message ne peut être consulté que par les participants et les personnes habilitées à traiter la conversation.
 - La conversation doit être rattachée au client qui l’a créée et, si nécessaire, à une seule réservation identifiée.
 - La clôture d’une conversation ne doit pas supprimer son historique.
+
+<div style="page-break-after: always;"></div>
 
 ## API pour les applications en agence
 
@@ -324,6 +338,8 @@ Le contrat d’API doit documenter :
 - la pagination, le filtrage et le tri des listes ;
 - la gestion des versions ;
 - les règles de limitation et de reprise sur erreur.
+
+<div style="page-break-after: always;"></div>
 
 ## Exigences non fonctionnelles
 
@@ -393,6 +409,8 @@ Le système doit :
 Les indicateurs et objectifs chiffrés d'écoconception, notamment le poids maximal des pages, le volume maximal de données transférées et les durées de conservation, doivent être définis avant la mise en production. L'impact indirect lié à l'augmentation potentielle de l'utilisation des véhicules doit également être pris en compte dans l'évaluation globale du projet.
 
 
+<div style="page-break-after: always;"></div>
+
 ## Critères d’acceptation principaux
 
 - Un client peut consulter et modifier son profil après authentification.
@@ -411,24 +429,3 @@ Les indicateurs et objectifs chiffrés d'écoconception, notamment le poids maxi
 - Une application d’agence peut consulter et modifier les ressources autorisées par l’API selon ses droits.
 - Les accès non autorisés à l’API sont refusés et journalisés.
 - Une sauvegarde et une restauration peuvent être exécutées selon la procédure prévue.
-
-## Points à arbitrer avant réalisation
-
-- création de compte, authentification et récupération du mot de passe ;
-- langues et pays couverts dans la première version ;
-- devise et affichage des taxes et frais ;
-- règles d’annulation à plus de sept jours ;
-- comportement en cas de réservation future lors de la suppression d’un compte ;
-- champs personnels obligatoires pour une réservation ;
-- liste exacte des éléments modifiables dans une réservation ;
-- canaux de notification ;
-- durée de conservation des données et des journaux ;
-- objectifs chiffrés de disponibilité, performance, reprise et sauvegarde ;
-- rôles et permissions détaillés des applications en agence ;
-- politique de gestion des conflits entre les actions du client et celles d’une agence.
-- horaires de disponibilité du tchat et comportement en dehors de ces horaires ;
-- délai cible de réponse du support ;
-- durée de conservation des conversations et des messages ;
-- règles de transfert, d’affectation et de clôture des conversations ;
-- pièces jointes, accusés de lecture et notifications hors ligne ;
-- outil utilisé par les conseillers pour traiter les conversations.
