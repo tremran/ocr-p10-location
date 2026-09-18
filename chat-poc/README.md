@@ -191,3 +191,27 @@ Les tests de navigation et de WebSocket entre deux interfaces ont également ét
 - interface support multiagence basée sur l'agence sélectionnée ;
 - broker STOMP local en mémoire ;
 - pas encore d'Azure Web PubSub ; cette évolution pourra remplacer le transport WebSocket local ultérieurement.
+
+## Abstraction du fournisseur temps réel
+
+Les contrôleurs REST et WebSocket publient les événements via l'interface `RealtimeMessagingPort`. Ils ne dépendent donc plus directement du broker STOMP local.
+
+Le fournisseur est sélectionné par configuration :
+
+```yaml
+realtime:
+	provider: ${REALTIME_PROVIDER:local}
+```
+
+Valeurs disponibles dans le POC :
+
+- `local` : charge `LocalRealtimeMessagingAdapter` et utilise le broker STOMP intégré à Spring ;
+- `azure` : charge `AzureWebPubSubMessagingAdapter`, prévue pour l'intégration Azure Web PubSub.
+
+Pour tester la sélection :
+
+```bash
+REALTIME_PROVIDER=local mvn test
+```
+
+L'adaptateur Azure constitue le point d'extension de migration. La connexion effective au service Azure Web PubSub nécessitera encore l'ajout du SDK Azure, de la publication vers les groupes et de la négociation des connexions côté interfaces web.

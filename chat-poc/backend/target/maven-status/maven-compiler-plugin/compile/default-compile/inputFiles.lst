@@ -13,6 +13,9 @@
 /home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/model/ConversationStatus.java
 /home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/model/Message.java
 /home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/model/SenderType.java
+/home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/realtime/AzureWebPubSubMessagingAdapter.java
+/home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/realtime/LocalRealtimeMessagingAdapter.java
+/home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/realtime/RealtimeMessagingPort.java
 /home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/repository/AgencyRepository.java
 /home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/repository/ClientAccountRepository.java
 /home/greg/ocr/repos/p10-location-voiture/chat-poc/backend/src/main/java/com/example/chatpoc/repository/ConversationRepository.java

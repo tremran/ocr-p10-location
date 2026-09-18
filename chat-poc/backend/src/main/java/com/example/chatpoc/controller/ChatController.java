@@ -9,10 +9,10 @@ import com.example.chatpoc.model.Message;
 import com.example.chatpoc.repository.AgencyRepository;
 import com.example.chatpoc.repository.ClientAccountRepository;
 import com.example.chatpoc.repository.ConversationRepository;
+import com.example.chatpoc.realtime.RealtimeMessagingPort;
 import com.example.chatpoc.service.ChatService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,18 +27,18 @@ public class ChatController {
     private final AgencyRepository agencyRepository;
         private final ClientAccountRepository clientAccountRepository;
     private final ConversationRepository conversationRepository;
-    private final SimpMessagingTemplate messagingTemplate;
+        private final RealtimeMessagingPort realtimeMessagingPort;
 
     public ChatController(ChatService chatService,
                          AgencyRepository agencyRepository,
                          ClientAccountRepository clientAccountRepository,
                          ConversationRepository conversationRepository,
-                         SimpMessagingTemplate messagingTemplate) {
+                         RealtimeMessagingPort realtimeMessagingPort) {
         this.chatService = chatService;
         this.agencyRepository = agencyRepository;
         this.clientAccountRepository = clientAccountRepository;
         this.conversationRepository = conversationRepository;
-        this.messagingTemplate = messagingTemplate;
+        this.realtimeMessagingPort = realtimeMessagingPort;
     }
 
     @GetMapping("/agencies")
@@ -125,10 +125,7 @@ public class ChatController {
                                 terminationMessage.getCreatedAt(),
                                 conversation.getStatus().name()
                 );
-                messagingTemplate.convertAndSend(
-                                "/topic/conversation." + conversation.getId(),
-                                messageResponse
-                );
+                realtimeMessagingPort.publishConversationMessage(conversation.getId(), messageResponse);
                 publishConversationEvent("CONVERSATION_CLOSED", conversation);
                 return ResponseEntity.ok(Map.<String, Object>of(
                                 "id", conversation.getId(),
@@ -150,8 +147,8 @@ public class ChatController {
     }
 
     private void publishConversationEvent(String eventType, Conversation conversation) {
-        messagingTemplate.convertAndSend(
-                "/topic/agency." + conversation.getAgency().getId() + ".conversations",
+        realtimeMessagingPort.publishConversationEvent(
+                conversation.getAgency().getId(),
                 Map.<String, Object>of(
                         "type", eventType,
                         "conversationId", conversation.getId(),
@@ -163,10 +160,7 @@ public class ChatController {
     @PostMapping("/messages")
     public ResponseEntity<ChatMessageResponse> sendMessage(@Valid @RequestBody ChatMessageRequest request) {
         ChatMessageResponse response = chatService.sendMessage(request);
-        messagingTemplate.convertAndSend(
-                "/topic/conversation." + response.getConversationId(),
-                response
-        );
+        realtimeMessagingPort.publishConversationMessage(response.getConversationId(), response);
         return ResponseEntity.ok(response);
     }
 

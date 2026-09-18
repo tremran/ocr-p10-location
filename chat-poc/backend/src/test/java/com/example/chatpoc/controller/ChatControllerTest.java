@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
+import com.example.chatpoc.realtime.RealtimeMessagingPort;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -47,7 +47,7 @@ class ChatControllerTest {
     private ConversationRepository conversationRepository;
 
     @MockBean
-    private SimpMessagingTemplate messagingTemplate;
+        private RealtimeMessagingPort realtimeMessagingPort;
 
     @Test
     void authenticatesKnownClient() throws Exception {
@@ -117,8 +117,8 @@ class ChatControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value("CLOSED"));
 
-        verify(messagingTemplate).convertAndSend(eq("/topic/conversation.10"), any(Object.class));
-        verify(messagingTemplate).convertAndSend(eq("/topic/agency.1.conversations"), any(Object.class));
+        verify(realtimeMessagingPort).publishConversationMessage(eq(10L), any());
+        verify(realtimeMessagingPort).publishConversationEvent(eq(1L), any());
     }
 
         private static void setId(Object entity, Long id) {
