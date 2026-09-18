@@ -74,7 +74,9 @@ Un conseiller habilité peut répondre aux demandes des clients depuis l’outil
 
 ## Parcours fonctionnels
 
-### Compte et profil
+### Epic 1 - Gestion du compte client
+
+Objectif : Permettre au client d'identifier, sécuriser et piloter son compte personnel au sein de l'application.
 
 #### US#01 - Consulter son profil
 
@@ -97,7 +99,7 @@ En tant que client authentifié, je veux modifier mes informations personnelles,
 
 #### US#03 - Supprimer son compte
 
-En tant que client, je veux demander la suppression de mon compte, afin de maîtriser mes données personnelles.
+En tant que client authentifié, je veux demander la suppression de mon compte, afin de maîtriser mes données personnelles.
 
 **Critères d'acceptation :**
 
@@ -105,7 +107,9 @@ En tant que client, je veux demander la suppression de mon compte, afin de maît
 - Le mot de passe du compte doit être saisi et vérifié.
 - La suppression est refusée si le mot de passe est incorrect.
 
-### Recherche d'offres
+### Epic 2 - Découverte des agences et des offres
+
+Objectif : faciliter la recherche d'une agence et la découverte des offres disponibles, avec une information claire et exploitable.
 
 #### US#04 - Consulter les agences
 
@@ -141,11 +145,13 @@ En tant que client, je veux consulter le détail d'une offre, afin de connaître
 - Les conditions applicables et les frais connus sont affichés.
 - Le montant total attendu, sa devise et les taxes ou frais inclus ou exclus sont compréhensibles.
 
-### Réservation et paiement
+### Epic 3 - Réservation, paiement et suivi
+
+Objectif : couvrir le parcours de réservation jusqu'au paiement et à la gestion de l'état de la réservation, en respectant les règles de disponibilité, de sécurité et d'idempotence.
 
 #### US#07 - Réserver une offre
 
-En tant que client, je veux réserver une offre disponible, afin de planifier ma location.
+En tant que client authentifié, je veux réserver une offre disponible, afin de planifier ma location.
 
 **Critères d'acceptation :**
 
@@ -157,7 +163,7 @@ En tant que client, je veux réserver une offre disponible, afin de planifier ma
 
 #### US#08 - Payer une réservation
 
-En tant que client, je veux payer ma réservation via un parcours sécurisé, afin de confirmer ma location sans communiquer mes données bancaires à l'application.
+En tant que client authentifié, je veux payer ma réservation via un parcours sécurisé, afin de confirmer ma location sans communiquer mes données bancaires à l'application.
 
 **Critères d'acceptation :**
 
@@ -165,8 +171,6 @@ En tant que client, je veux payer ma réservation via un parcours sécurisé, af
 - L'application ne stocke pas les données bancaires sensibles.
 - Le client est informé de l'acceptation, du refus ou de l'échec du paiement.
 - Un paiement accepté déclenche la confirmation de la réservation.
-
-### Gestion des réservations
 
 #### US#09 - Consulter ses réservations
 
@@ -179,7 +183,7 @@ En tant que client authentifié, je veux consulter mes réservations, afin de su
 
 #### US#10 - Modifier une réservation
 
-En tant que client, je veux modifier une réservation éligible, afin d'adapter ma location à un changement de besoin.
+En tant que client authentifié, je veux modifier une réservation éligible, afin d'adapter ma location à un changement de besoin.
 
 **Critères d'acceptation :**
 
@@ -190,7 +194,7 @@ En tant que client, je veux modifier une réservation éligible, afin d'adapter 
 
 #### US#11 - Annuler une réservation
 
-En tant que client, je veux annuler une réservation, afin de mettre fin à une location dont je n'ai plus besoin.
+En tant que client authentifié, je veux annuler une réservation, afin de mettre fin à une location dont je n'ai plus besoin.
 
 **Critères d'acceptation :**
 
@@ -198,7 +202,9 @@ En tant que client, je veux annuler une réservation, afin de mettre fin à une 
 - Pour une annulation effectuée moins d'une semaine avant le début de la location, le remboursement est limité à 25 % du montant total de la réservation, sous réserve des règles complémentaires validées.
 - Le montant et le statut du remboursement sont enregistrés et consultables dans le détail de la réservation.
 
-### Tchat et support
+### Epic 4 - Support client et conversations
+
+Objectif : assurer la communication en temps réel entre le client et le support ou l'agence, sans interrompre l'expérience utilisateur.
 
 #### US#12 - Ouvrir une conversation
 
@@ -219,7 +225,9 @@ En tant que client authentifié, je veux envoyer et recevoir des messages sans r
 - Les messages apparaissent dans l'ordre chronologique avec leur heure et leur état de remise.
 - Un message vide ne peut pas être envoyé.
 
-### API pour les applications en agence
+### Epic 5 - Intégration agence et API métier
+
+Objectif : exposer un accès métier sécurisé aux applications d'agence et garantir l'authentification, l'autorisation, la traçabilité et la validation des opérations.
 
 #### US#14 - Gérer les ressources via l'API
 
@@ -245,23 +253,23 @@ En tant que responsable d'une application d'agence, je veux que chaque appel API
 
 ### Tableau récapitulatif des US
 
-| ID | Acteur | User story | 
-| --- | --- | --- | 
-| US#01 | Client authentifié | Consulter son profil |
-| US#02 | Client authentifié | Modifier ses informations personnelles |
-| US#03 | Client | Demander la suppression de son compte |
-| US#04 | Client | Consulter et rechercher les agences |
-| US#05 | Client | Rechercher une offre |
-| US#06 | Client | Consulter le détail d'une offre |
-| US#07 | Client | Réserver une offre disponible |
-| US#08 | Client | Payer sa réservation via un parcours sécurisé |
-| US#09 | Client authentifié | Consulter ses réservations |
-| US#10 | Client | Modifier une réservation |
-| US#11 | Client | Annuler une réservation |
-| US#12 | Client authentifié | Ouvrir une conversation avec le support ou une agence |
-| US#13 | Client authentifié | Envoyer et recevoir des messages sans recharger la page |
-| US#14 | Application d'agence | Consulter et gérer les ressources métier autorisées |
-| US#15 | Responsable d'une application d'agence | Garantir que chaque appel API est authentifié, autorisé et traçable |
+| Epic | ID | Acteur | User story | 
+| --- | --- | --- | --- | 
+| Epic 1 | US#01 | Client authentifié | Consulter son profil |
+| Epic 1 | US#02 | Client authentifié | Modifier ses informations personnelles |
+| Epic 1 | US#03 | Client authentifié | Demander la suppression de son compte |
+| Epic 2 | US#04 | Client | Consulter et rechercher les agences |
+| Epic 2 | US#05 | Client | Rechercher une offre |
+| Epic 2 | US#06 | Client | Consulter le détail d'une offre |
+| Epic 3 | US#07 | Client authentifié | Réserver une offre disponible |
+| Epic 3 | US#08 | Client authentifié | Payer sa réservation via un parcours sécurisé |
+| Epic 3 | US#09 | Client authentifié | Consulter ses réservations |
+| Epic 3 | US#10 | Client authentifié | Modifier une réservation |
+| Epic 3 | US#11 | Client authentifié | Annuler une réservation |
+| Epic 4 | US#12 | Client authentifié | Ouvrir une conversation avec le support ou une agence |
+| Epic 4 | US#13 | Client authentifié | Envoyer et recevoir des messages sans recharger la page |
+| Epic 5 | US#14 | Application d'agence | Consulter et gérer les ressources métier autorisées |
+| Epic 5 | US#15 | Responsable d'une application d'agence | Garantir que chaque appel API est authentifié, autorisé et traçable |
 
 ## Règles métier transverses
 
