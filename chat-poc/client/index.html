@@ -122,7 +122,27 @@
         await openConversation(conversation);
     }
 
-    function connectSocket() {
+    async function connectSocket() {
+        const azureResponse = await fetch(
+            `${apiBase}/realtime/client-url?userId=${encodeURIComponent(guestId)}&group=conversation-${currentConversation.id}`
+        );
+        if (azureResponse.ok) {
+            const { url } = await azureResponse.json();
+            const azureSocket = new WebSocket(url, 'json.webpubsub.azure.v1');
+            azureSocket.onmessage = (event) => {
+                const payload = parseRealtimePayload(event.data);
+                if (!payload || !payload.senderType) return;
+                appendMessage(payload.senderType, payload.content, payload.createdAt);
+                if (payload.status === 'CLOSED') {
+                    currentConversation.status = 'CLOSED';
+                    updateMessageForm();
+                    clientIdentity.textContent = 'Conversation terminée. Choisissez une agence pour lancer un nouveau chat.';
+                    setupEl.style.display = 'block';
+                }
+            };
+            return;
+        }
+
         const socketUrl = 'http://localhost:8080/ws';
         socket = new SockJS(socketUrl);
         stompClient = Stomp.over(socket);
@@ -185,13 +205,23 @@
         item.className = `message ${senderType === 'CUSTOMER' ? 'customer' : 'agency'}`;
         const meta = document.createElement('div');
         meta.className = 'meta';
-        meta.textContent = `${senderType === 'CUSTOMER' ? 'Vous' : 'Agence'} · ${new Date(createdAt).toLocaleTimeString()}`;
+        const parsedDate = createdAt ? new Date(createdAt) : null;
+        const timestamp = parsedDate && !Number.isNaN(parsedDate.getTime())
+            ? parsedDate.toLocaleTimeString()
+            : '';
+        meta.textContent = `${senderType === 'CUSTOMER' ? 'Vous' : 'Agence'}${timestamp ? ` · ${timestamp}` : ''}`;
         const body = document.createElement('div');
         body.textContent = content;
         item.appendChild(meta);
         item.appendChild(body);
         messagesEl.appendChild(item);
         messagesEl.scrollTop = messagesEl.scrollHeight;
+    }
+
+    function parseRealtimePayload(rawMessage) {
+        const envelope = typeof rawMessage === 'string' ? JSON.parse(rawMessage) : rawMessage;
+        if (envelope.type !== 'message') return envelope;
+        return typeof envelope.data === 'string' ? JSON.parse(envelope.data) : envelope.data;
     }
 
     function updateMessageForm() {

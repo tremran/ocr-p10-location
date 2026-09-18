@@ -48,6 +48,21 @@ public class ChatController {
                 .collect(Collectors.toList());
     }
 
+        @GetMapping("/realtime/client-url")
+        public ResponseEntity<Map<String, String>> getRealtimeClientUrl(
+                        @RequestParam String userId,
+                        @RequestParam(required = false) List<String> group
+        ) {
+                String clientUrl = realtimeMessagingPort.createClientAccessUrl(
+                                userId,
+                                group == null ? List.of() : group
+                );
+                if (clientUrl == null) {
+                        return ResponseEntity.noContent().build();
+                }
+                return ResponseEntity.ok(Map.of("url", clientUrl));
+        }
+
         @PostMapping("/auth/login")
         public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, String> payload) {
                 String username = payload.get("username");

@@ -6,6 +6,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.List;
 
 @Component
 @ConditionalOnProperty(name = "realtime.provider", havingValue = "local", matchIfMissing = true)
@@ -25,5 +26,10 @@ public class LocalRealtimeMessagingAdapter implements RealtimeMessagingPort {
     @Override
     public void publishConversationEvent(Long agencyId, Map<String, Object> event) {
         messagingTemplate.convertAndSend("/topic/agency." + agencyId + ".conversations", event);
+    }
+
+    @Override
+    public String createClientAccessUrl(String userId, List<String> groups) {
+        return null;
     }
 }

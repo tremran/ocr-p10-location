@@ -189,29 +189,34 @@ Les tests de navigation et de WebSocket entre deux interfaces ont également ét
 - authentification simplifiée, sans session ni JWT ;
 - mot de passe de démonstration en clair ;
 - interface support multiagence basée sur l'agence sélectionnée ;
-- broker STOMP local en mémoire ;
-- pas encore d'Azure Web PubSub ; cette évolution pourra remplacer le transport WebSocket local ultérieurement.
+- broker STOMP local en mémoire en mode `local` ;
+- connexion Azure Web PubSub nécessitant une chaîne de connexion valide en mode `azure`.
 
-## Abstraction du fournisseur temps réel
+## Connexion Azure Web PubSub
 
-Les contrôleurs REST et WebSocket publient les événements via l'interface `RealtimeMessagingPort`. Ils ne dépendent donc plus directement du broker STOMP local.
-
-Le fournisseur est sélectionné par configuration :
+Le transport temps réel est isolé derrière `RealtimeMessagingPort`. Le fournisseur est sélectionné par la propriété :
 
 ```yaml
 realtime:
 	provider: ${REALTIME_PROVIDER:local}
 ```
 
-Valeurs disponibles dans le POC :
-
-- `local` : charge `LocalRealtimeMessagingAdapter` et utilise le broker STOMP intégré à Spring ;
-- `azure` : charge `AzureWebPubSubMessagingAdapter`, prévue pour l'intégration Azure Web PubSub.
-
-Pour tester la sélection :
+Pour utiliser le broker local :
 
 ```bash
-REALTIME_PROVIDER=local mvn test
+REALTIME_PROVIDER=local docker compose up -d --build
 ```
 
-L'adaptateur Azure constitue le point d'extension de migration. La connexion effective au service Azure Web PubSub nécessitera encore l'ajout du SDK Azure, de la publication vers les groupes et de la négociation des connexions côté interfaces web.
+Pour connecter le chat à Azure Web PubSub :
+
+```bash
+export REALTIME_PROVIDER=azure
+export AZURE_WEB_PUBSUB_CONNECTION_STRING="Endpoint=https://...;AccessKey=...;Version=1.0;"
+export AZURE_WEB_PUBSUB_HUB_NAME=chat
+docker compose up -d --build
+```
+
+En mode Azure, le backend publie les messages dans les groupes `conversation-{id}` et les événements de liste dans les groupes `agency-{id}`. Les interfaces obtiennent une URL temporaire via `/api/realtime/client-url`, puis ouvrent une WebSocket native vers Azure Web PubSub.
+
+L'intégration utilise le SDK Java `azure-messaging-webpubsub`. Les secrets doivent être fournis par l'environnement ou un coffre de secrets, et ne doivent jamais être commités.
+

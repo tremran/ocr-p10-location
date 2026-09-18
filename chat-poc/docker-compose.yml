@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     container_name: chat-poc-db
     environment:
-      POSTGRES_DB: chat_poc
-      POSTGRES_USER: chatuser
-      POSTGRES_PASSWORD: chatpass
+      POSTGRES_DB: ${POSTGRES_DB:-chat_poc}
+      POSTGRES_USER: ${POSTGRES_USER:-chatuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-chatpass}
     ports:
       - "5433:5432"
     volumes:
@@ -18,9 +18,12 @@ services:
     depends_on:
       - db
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/chat_poc
-      SPRING_DATASOURCE_USERNAME: chatuser
-      SPRING_DATASOURCE_PASSWORD: chatpass
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-chat_poc}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-chatuser}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-chatpass}
+      REALTIME_PROVIDER: ${REALTIME_PROVIDER:-local}
+      AZURE_WEB_PUBSUB_CONNECTION_STRING: ${AZURE_WEB_PUBSUB_CONNECTION_STRING:-}
+      AZURE_WEB_PUBSUB_HUB_NAME: ${AZURE_WEB_PUBSUB_HUB_NAME:-chat}
     ports:
       - "8080:8080"
 
