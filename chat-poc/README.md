@@ -92,6 +92,45 @@ sequenceDiagram
     Support-->>Support: Actualise l'interface
     Client-->>Client: Affiche le message
 ```
+## Installation et configuration
+
+### Prérequis
+
+- Docker Engine 24 ou une version récente avec Docker Compose v2 (`docker compose`) ;
+- les ports `5433`, `8080`, `8081` et `8082` disponibles sur la machine ;
+- un accès Internet lors du premier démarrage, afin de télécharger les images Docker, les dépendances Maven et les bibliothèques JavaScript chargées par les interfaces.
+
+Vérifiez que Docker et Compose sont disponibles :
+
+```bash
+docker --version
+docker compose version
+```
+
+### Variables de configuration
+
+Docker Compose applique les valeurs par défaut suivantes. Elles peuvent être surchargées dans le shell ou dans un fichier `.env` placé dans le dossier `chat-poc`.
+
+| Variable | Valeur par défaut | Description |
+|---|---|---|
+| `POSTGRES_DB` | `chat_poc` | Nom de la base PostgreSQL |
+| `POSTGRES_USER` | `chatuser` | Utilisateur PostgreSQL |
+| `POSTGRES_PASSWORD` | `chatpass` | Mot de passe PostgreSQL |
+| `REALTIME_PROVIDER` | `local` | Fournisseur temps réel : `local` ou `azure` |
+| `AZURE_WEB_PUBSUB_CONNECTION_STRING` | vide | Chaîne de connexion Azure Web PubSub, requise avec `REALTIME_PROVIDER=azure` |
+| `AZURE_WEB_PUBSUB_HUB_NAME` | `chat` | Nom du hub Azure Web PubSub |
+
+Exemple de fichier `.env` pour modifier les identifiants de base tout en conservant le broker local :
+
+```dotenv
+POSTGRES_DB=chat_poc
+POSTGRES_USER=chatuser
+POSTGRES_PASSWORD=un-mot-de-passe-local
+REALTIME_PROVIDER=local
+```
+
+Ne versionnez pas un fichier `.env` contenant un secret Azure ou un mot de passe non dédié au POC.
+
 ## Démarrage
 
 Depuis le dossier `chat-poc` :
@@ -106,6 +145,8 @@ Services disponibles :
 - Support : http://localhost:8082
 - API backend : http://localhost:8080
 - PostgreSQL : `localhost:5433` depuis l'hôte, `db:5432` depuis le réseau Docker
+
+Après la construction initiale, attendez que les quatre conteneurs soient démarrés, puis ouvrez les interfaces Client et Support dans deux onglets distincts. Connectez-vous au client avec l'un des comptes de démonstration et sélectionnez une agence dans l'interface support pour échanger des messages.
 
 Pour arrêter les conteneurs sans supprimer les données :
 
