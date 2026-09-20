@@ -44,7 +44,7 @@ Les deux comptes utilisent le même mot de passe : `mot de passe client`.
 | `client1` | `mot de passe client` |
 | `client2` | `mot de passe client` |
 
-Ces comptes sont destinés uniquement au POC. Le mot de passe est stocké en clair dans l'initialisation de démonstration et ne doit pas être conservé ainsi en production.
+**Avertissement :** Ces comptes sont destinés uniquement au POC. Le mot de passe est stocké en clair dans l'initialisation de démonstration et ne doit pas être conservé ainsi en production.
 
 ## Stack technique
 
