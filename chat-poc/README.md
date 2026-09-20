@@ -215,3 +215,5 @@ REALTIME_PROVIDER=local mvn test
 ```
 
 L'adaptateur Azure constitue le point d'extension de migration. La connexion effective au service Azure Web PubSub nécessitera encore l'ajout du SDK Azure, de la publication vers les groupes et de la négociation des connexions côté interfaces web.
+
+Un exemple de configuration est disponible sur la branche `azure-socket`
