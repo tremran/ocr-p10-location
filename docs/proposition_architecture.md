@@ -125,7 +125,7 @@ Cette architecture pourra évoluer vers des services séparés si la charge ou l
 
 #### Cas d'utilisation
 
-![diagramme use case](./docs/img/use_case.png)
+![diagramme use case](./img/use_case.png)
 
 <!-- 
 ```plantuml
@@ -168,7 +168,7 @@ UC_Book .> UC_Pay : <<include>>
 
 #### Architecture logique
 
-![diagramme architecture](./docs/img/archi.png)
+![diagramme architecture](./img/archi.png)
 <!-- 
 ```plantuml
 @startuml components
@@ -225,7 +225,7 @@ Backend -- > Observability
 
 #### Séquence de réservation et de paiement
 
-![Diagramme de séquence](./docs/img/sequence.png)
+![Diagramme de séquence](./img/sequence.png)
 <!-- 
 ```plantuml
 @startuml booking_sequence
@@ -279,7 +279,7 @@ end
 
 #### États d'une réservation
 
-![Diagramme d'état](./docs/img/etats.png)
+![Diagramme d'état](./img/etats.png)
 <!-- 
 ```plantuml
 @startuml reservation_states
