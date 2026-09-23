@@ -1,7 +1,6 @@
 
 ```mermaid
 erDiagram
-    direction LR
     SUPPORT_AGENT
     AGENCY ||--o{ RESERVATION : depart
     PROFILE ||--|| USER : possède
