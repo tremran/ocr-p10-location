@@ -499,7 +499,6 @@ Le modèle proposé utilise une base relationnelle transactionnelle. Les donnée
 
 ```mermaid
 erDiagram
-    direction LR
     SUPPORT_AGENT
     AGENCY ||--o{ RESERVATION : depart
     PROFILE ||--|| USER : possède
